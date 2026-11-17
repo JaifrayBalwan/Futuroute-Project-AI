@@ -1,0 +1,333 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'jaifray26csu290@ncuindia.edu'
+      );
+    }
+
+    function isBoundedStringList(arr, maxLen) {
+      return arr is list && arr.size() <= maxLen && (arr.size() == 0 || arr[0] is string);
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'onboarded', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'email', 'ageRange', 'educationLevel', 'stream', 'academicYear',
+          'subjects', 'interests', 'capabilities', 'environment', 'budget', 'weeklyHours',
+          'learningPreferences', 'shortGoal', 'longGoal', 'onboarded', 'createdAt', 'updatedAt'
+        ])
+        && data.uid == userId
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100
+        && data.onboarded is bool
+        && (!('email' in data) || (data.email is string && data.email.size() <= 200))
+        && (!('ageRange' in data) || (data.ageRange is string && data.ageRange.size() <= 40))
+        && (!('educationLevel' in data) || (data.educationLevel is string && data.educationLevel.size() <= 80))
+        && (!('stream' in data) || (data.stream is string && data.stream.size() <= 80))
+        && (!('academicYear' in data) || (data.academicYear is string && data.academicYear.size() <= 60))
+        && (!('subjects' in data) || isBoundedStringList(data.subjects, 25))
+        && (!('interests' in data) || isBoundedStringList(data.interests, 30))
+        && (!('capabilities' in data) || isBoundedStringList(data.capabilities, 25))
+        && (!('environment' in data) || (data.environment is string && data.environment.size() <= 100))
+        && (!('budget' in data) || (data.budget is number && data.budget >= 0 && data.budget <= 10000000))
+        && (!('weeklyHours' in data) || (data.weeklyHours is number && data.weeklyHours >= 1 && data.weeklyHours <= 60))
+        && (!('learningPreferences' in data) || isBoundedStringList(data.learningPreferences, 15))
+        && (!('shortGoal' in data) || (data.shortGoal is string && data.shortGoal.size() <= 240))
+        && (!('longGoal' in data) || (data.longGoal is string && data.longGoal.size() <= 240))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidCareer(data, careerId) {
+      return data.keys().hasAll(['id', 'name', 'industry', 'short', 'day', 'emerging', 'updatedAt'])
+        && data.keys().hasOnly([
+          'id', 'name', 'industry', 'subcategory', 'short', 'day', 'hue',
+          'responsibilities', 'skills', 'capabilities', 'interests', 'subjects',
+          'pathways', 'altRoutes', 'projects', 'commitment', 'commitmentLevel',
+          'estimatedCostNote', 'progression', 'freelanceOpportunity',
+          'entrepreneurshipOpportunity', 'entryLevelOpportunities',
+          'pros', 'cons', 'resources', 'trial', 'challengeId',
+          'emerging', 'environment', 'minEducation', 'budgetTier', 'tags', 'updatedAt'
+        ])
+        && data.id == careerId
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 120
+        && data.industry is string && data.industry.size() >= 2 && data.industry.size() <= 80
+        && data.short is string && data.short.size() >= 4 && data.short.size() <= 300
+        && data.day is string && data.day.size() >= 4 && data.day.size() <= 1000
+        && data.emerging is bool
+        && (!('subcategory' in data) || (data.subcategory is string && data.subcategory.size() <= 80))
+        && (!('hue' in data) || data.hue in ['lavender', 'cyan', 'turquoise', 'pink', 'violet', 'warning'])
+        && (!('responsibilities' in data) || isBoundedStringList(data.responsibilities, 15))
+        && (!('skills' in data) || isBoundedStringList(data.skills, 20))
+        && (!('capabilities' in data) || isBoundedStringList(data.capabilities, 20))
+        && (!('interests' in data) || isBoundedStringList(data.interests, 20))
+        && (!('subjects' in data) || isBoundedStringList(data.subjects, 15))
+        && (!('pathways' in data) || isBoundedStringList(data.pathways, 12))
+        && (!('altRoutes' in data) || isBoundedStringList(data.altRoutes, 12))
+        && (!('projects' in data) || isBoundedStringList(data.projects, 12))
+        && (!('commitment' in data) || (data.commitment is string && data.commitment.size() <= 300))
+        && (!('commitmentLevel' in data) || (data.commitmentLevel is number && data.commitmentLevel >= 1 && data.commitmentLevel <= 5))
+        && (!('estimatedCostNote' in data) || (data.estimatedCostNote is string && data.estimatedCostNote.size() <= 400))
+        && (!('progression' in data) || isBoundedStringList(data.progression, 10))
+        && (!('freelanceOpportunity' in data) || (data.freelanceOpportunity is string && data.freelanceOpportunity.size() <= 300))
+        && (!('entrepreneurshipOpportunity' in data) || (data.entrepreneurshipOpportunity is string && data.entrepreneurshipOpportunity.size() <= 300))
+        && (!('entryLevelOpportunities' in data) || (data.entryLevelOpportunities is string && data.entryLevelOpportunities.size() <= 300))
+        && (!('pros' in data) || isBoundedStringList(data.pros, 10))
+        && (!('cons' in data) || isBoundedStringList(data.cons, 10))
+        && (!('resources' in data) || (data.resources is list && data.resources.size() <= 12))
+        && (!('trial' in data) || (data.trial is string && data.trial.size() <= 400))
+        && (!('challengeId' in data) || (data.challengeId is string && data.challengeId.size() <= 64))
+        && (!('environment' in data) || (data.environment is string && data.environment.size() <= 100))
+        && (!('minEducation' in data) || (data.minEducation is string && data.minEducation.size() <= 80))
+        && (!('budgetTier' in data) || (data.budgetTier is number && data.budgetTier >= 0 && data.budgetTier <= 1000000))
+        && (!('tags' in data) || isBoundedStringList(data.tags, 30))
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSavedCareer(data, userId, careerId) {
+      return data.keys().hasAll(['userId', 'careerId', 'folder', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'careerId', 'folder', 'note', 'createdAt', 'updatedAt'])
+        && data.userId == userId
+        && data.careerId == careerId
+        && data.folder in ['top', 'alternative', 'explore_later']
+        && (!('note' in data) || (data.note is string && data.note.size() <= 400))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAssessment(data, userId) {
+      return data.keys().hasAll(['userId', 'answers', 'groups', 'source', 'createdAt'])
+        && data.keys().hasOnly(['userId', 'answers', 'groups', 'source', 'createdAt'])
+        && data.userId == userId
+        && data.answers is map
+        && data.groups is map
+        && data.source in ['gemini', 'deterministic']
+        && data.createdAt is timestamp;
+    }
+
+    function isValidComparison(data, userId) {
+      return data.keys().hasAll(['userId', 'careerIds', 'title', 'createdAt'])
+        && data.keys().hasOnly(['userId', 'careerIds', 'title', 'note', 'createdAt'])
+        && data.userId == userId
+        && data.careerIds is list && data.careerIds.size() >= 2 && data.careerIds.size() <= 3 && data.careerIds[0] is string
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 180
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500))
+        && data.createdAt is timestamp;
+    }
+
+    function isValidRoadmap(data, userId) {
+      return data.keys().hasAll(['userId', 'careerId', 'title', 'level', 'hours', 'budget', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'careerId', 'title', 'level', 'hours', 'budget', 'format', 'project', 'weeks', 'createdAt', 'updatedAt'])
+        && data.userId == userId
+        && data.careerId is string && data.careerId.size() >= 2 && data.careerId.size() <= 128
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 160
+        && data.level in ['beginner', 'some', 'comfortable']
+        && data.hours is number && data.hours >= 1 && data.hours <= 60
+        && data.budget is number && data.budget >= 0 && data.budget <= 10000000
+        && (!('format' in data) || (data.format is string && data.format.size() <= 40))
+        && (!('project' in data) || (data.project is string && data.project.size() <= 300))
+        && (!('weeks' in data) || (data.weeks is number && data.weeks >= 1 && data.weeks <= 260))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidRoadmapTask(data, userId, roadmapId) {
+      return data.keys().hasAll(['userId', 'roadmapId', 'phase', 'position', 'title', 'done', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'roadmapId', 'phase', 'week', 'position', 'title', 'desc', 'effort', 'resource', 'done', 'updatedAt'])
+        && data.userId == userId
+        && data.roadmapId == roadmapId
+        && data.phase is number && data.phase >= 1 && data.phase <= 4
+        && (!('week' in data) || (data.week is number && data.week >= 1 && data.week <= 260))
+        && data.position is number && data.position >= 0 && data.position <= 500
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 200
+        && (!('desc' in data) || (data.desc is string && data.desc.size() <= 600))
+        && (!('effort' in data) || (data.effort is string && data.effort.size() <= 80))
+        && (!('resource' in data) || data.resource == null || (data.resource is map && data.resource.keys().hasOnly(['name', 'url'])))
+        && data.done is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidChallenge(data, userId, challengeId) {
+      return data.keys().hasAll(['userId', 'challengeId', 'correct', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'challengeId', 'answer', 'correct', 'enjoy', 'reflection', 'updatedAt'])
+        && data.userId == userId
+        && data.challengeId == challengeId
+        && data.correct is bool
+        && (!('answer' in data) || (data.answer is string && data.answer.size() <= 500))
+        && (!('enjoy' in data) || data.enjoy in ['enjoyed', 'okay', 'not'])
+        && (!('reflection' in data) || (data.reflection is string && data.reflection.size() <= 600))
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidActivity(data, userId) {
+      return data.keys().hasAll(['userId', 'text', 'kind', 'createdAt'])
+        && data.keys().hasOnly(['userId', 'text', 'kind', 'createdAt'])
+        && data.userId == userId
+        && data.text is string && data.text.size() >= 1 && data.text.size() <= 250
+        && data.kind in ['save', 'compare', 'task', 'challenge', 'roadmap', 'discover']
+        && data.createdAt is timestamp;
+    }
+
+    // Boot connectivity check document
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Admin registry (read-own only; write via console/provisioning)
+    match /admins/{adminId} {
+      allow get: if isVerifiedUser() && request.auth.uid == adminId;
+    }
+
+    // Public Career Catalog
+    match /careers/{careerId} {
+      allow get: if isValidId(careerId);
+      allow list: if true;
+      allow create: if isValidId(careerId) && isAdmin() && isValidCareer(incoming(), careerId) && incoming().updatedAt == request.time;
+      allow update: if isValidId(careerId) && isAdmin() && isValidCareer(incoming(), careerId) && incoming().id == existing().id && incoming().updatedAt == request.time;
+      allow delete: if isValidId(careerId) && isAdmin();
+    }
+
+    // Private User Profile & Subcollections
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if false;
+      allow create: if isValidId(userId) && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId) && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'email', 'ageRange', 'educationLevel', 'stream', 'academicYear',
+          'subjects', 'interests', 'capabilities', 'environment', 'budget', 'weeklyHours',
+          'learningPreferences', 'shortGoal', 'longGoal', 'onboarded', 'updatedAt'
+        ]);
+      allow delete: if isValidId(userId) && isOwner(userId);
+
+      match /saved_careers/{careerId} {
+        allow get: if isValidId(userId) && isValidId(careerId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(careerId) && isOwner(userId)
+          && isValidSavedCareer(incoming(), userId, careerId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) && isValidId(careerId) && isOwner(userId)
+          && isValidSavedCareer(incoming(), userId, careerId)
+          && incoming().userId == existing().userId
+          && incoming().careerId == existing().careerId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['folder', 'note', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(careerId) && isOwner(userId);
+      }
+
+      match /assessments/{assessmentId} {
+        allow get: if isValidId(userId) && isValidId(assessmentId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(assessmentId) && isOwner(userId)
+          && isValidAssessment(incoming(), userId)
+          && incoming().createdAt == request.time;
+        allow delete: if isValidId(userId) && isValidId(assessmentId) && isOwner(userId);
+      }
+
+      match /comparisons/{comparisonId} {
+        allow get: if isValidId(userId) && isValidId(comparisonId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(comparisonId) && isOwner(userId)
+          && isValidComparison(incoming(), userId)
+          && incoming().createdAt == request.time;
+        allow update: if isValidId(userId) && isValidId(comparisonId) && isOwner(userId)
+          && isValidComparison(incoming(), userId)
+          && incoming().userId == existing().userId
+          && incoming().createdAt == existing().createdAt
+          && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'note', 'careerIds']);
+        allow delete: if isValidId(userId) && isValidId(comparisonId) && isOwner(userId);
+      }
+
+      match /roadmaps/{roadmapId} {
+        allow get: if isValidId(userId) && isValidId(roadmapId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(roadmapId) && isOwner(userId)
+          && isValidRoadmap(incoming(), userId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId) && isValidId(roadmapId) && isOwner(userId)
+          && isValidRoadmap(incoming(), userId)
+          && incoming().userId == existing().userId
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'level', 'hours', 'budget', 'format', 'project', 'weeks', 'updatedAt']);
+        allow delete: if isValidId(userId) && isValidId(roadmapId) && isOwner(userId);
+
+        match /tasks/{taskId} {
+          allow get: if isValidId(userId) && isValidId(roadmapId) && isValidId(taskId) && isOwner(userId);
+          allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+          allow create: if isValidId(userId) && isValidId(roadmapId) && isValidId(taskId) && isOwner(userId)
+            && isValidRoadmapTask(incoming(), userId, roadmapId)
+            && incoming().updatedAt == request.time
+            && exists(/databases/$(database)/documents/users/$(userId)/roadmaps/$(roadmapId));
+          allow update: if isValidId(userId) && isValidId(roadmapId) && isValidId(taskId) && isOwner(userId)
+            && isValidRoadmapTask(incoming(), userId, roadmapId)
+            && incoming().userId == existing().userId
+            && incoming().roadmapId == existing().roadmapId
+            && incoming().updatedAt == request.time
+            && incoming().diff(existing()).affectedKeys().hasOnly(['phase', 'week', 'position', 'title', 'desc', 'effort', 'resource', 'done', 'updatedAt'])
+            && exists(/databases/$(database)/documents/users/$(userId)/roadmaps/$(roadmapId));
+          allow delete: if isValidId(userId) && isValidId(roadmapId) && isValidId(taskId) && isOwner(userId);
+        }
+      }
+
+      match /challenges/{challengeId} {
+        allow get: if isValidId(userId) && isValidId(challengeId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create, update: if isValidId(userId) && isValidId(challengeId) && isOwner(userId)
+          && isValidChallenge(incoming(), userId, challengeId)
+          && incoming().updatedAt == request.time;
+        allow delete: if isValidId(userId) && isValidId(challengeId) && isOwner(userId);
+      }
+
+      match /activity/{activityId} {
+        allow get: if isValidId(userId) && isValidId(activityId) && isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId) && isValidId(activityId) && isOwner(userId)
+          && isValidActivity(incoming(), userId)
+          && incoming().createdAt == request.time;
+        allow delete: if isValidId(userId) && isValidId(activityId) && isOwner(userId);
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Futuroute",
+  "description": "AI-powered career exploration platform helping students discover, compare, try, and plan career paths within their time and budget.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

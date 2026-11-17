@@ -1,0 +1,288 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Private student profile and learning preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 200 },
+        "ageRange": { "type": "string", "maxLength": 40 },
+        "educationLevel": { "type": "string", "maxLength": 80 },
+        "stream": { "type": "string", "maxLength": 80 },
+        "academicYear": { "type": "string", "maxLength": 60 },
+        "subjects": { "type": "array", "description": "Max 20 favourite subjects" },
+        "interests": { "type": "array", "description": "Max 25 selected interest IDs" },
+        "capabilities": { "type": "array", "description": "Max 20 selected capability IDs" },
+        "environment": { "type": "string", "maxLength": 100 },
+        "budget": { "type": "number" },
+        "weeklyHours": { "type": "number" },
+        "learningPreferences": { "type": "array", "description": "Max 10 learning preferences" },
+        "shortGoal": { "type": "string", "maxLength": 240 },
+        "longGoal": { "type": "string", "maxLength": 240 },
+        "currentSkills": { "type": "array", "description": "Max 25 current technical/soft skills" },
+        "weaknesses": { "type": "array", "description": "Max 15 areas to improve" },
+        "expectedStartingSalaryInr": { "type": "number" },
+        "desiredLongTermSalaryInr": { "type": "number" },
+        "preferredWorkLocation": { "type": "string", "enum": ["India", "Abroad", "Both"] },
+        "willingToInvestEducation": { "type": "string", "enum": ["Yes", "Limited / Free-first", "No"] },
+        "educationBudgetInr": { "type": "number" },
+        "willingHigherEducation": { "type": "string", "enum": ["Yes", "Maybe", "No"] },
+        "onboarded": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "onboarded", "createdAt", "updatedAt"]
+    },
+    "Career": {
+      "title": "Career",
+      "description": "Public career catalog entry across 20 industries.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-z0-9\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "industry": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "subcategory": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "short": { "type": "string", "minLength": 5, "maxLength": 300 },
+        "day": { "type": "string", "minLength": 10, "maxLength": 1000 },
+        "hue": { "type": "string", "enum": ["lavender", "cyan", "turquoise", "pink", "violet", "warning"] },
+        "responsibilities": { "type": "array" },
+        "skills": { "type": "array" },
+        "capabilities": { "type": "array" },
+        "interests": { "type": "array" },
+        "subjects": { "type": "array" },
+        "pathways": { "type": "array" },
+        "altRoutes": { "type": "array" },
+        "projects": { "type": "array" },
+        "commitment": { "type": "string", "maxLength": 300 },
+        "commitmentLevel": { "type": "number" },
+        "estimatedCostNote": { "type": "string", "maxLength": 400 },
+        "progression": { "type": "array" },
+        "pros": { "type": "array" },
+        "cons": { "type": "array" },
+        "resources": { "type": "array" },
+        "trial": { "type": "string", "maxLength": 400 },
+        "challengeId": { "type": "string", "maxLength": 64 },
+        "emerging": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "industry", "short", "day", "emerging", "updatedAt"]
+    },
+    "SavedCareer": {
+      "title": "SavedCareer",
+      "description": "User-saved career organized into folders.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "careerId": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "folder": { "type": "string", "enum": ["top", "alternative", "explore_later"] },
+        "note": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "careerId", "folder", "createdAt", "updatedAt"]
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "description": "Saved guided or deterministic career discovery assessment.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "answers": { "type": "object" },
+        "groups": { "type": "object" },
+        "source": { "type": "string", "enum": ["gemini", "deterministic"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "answers", "groups", "source", "createdAt"]
+    },
+    "CareerComparison": {
+      "title": "CareerComparison",
+      "description": "Saved 2-3 career side-by-side comparison.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "careerIds": { "type": "array" },
+        "title": { "type": "string", "maxLength": 180 },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "careerIds", "title", "createdAt"]
+    },
+    "Roadmap": {
+      "title": "Roadmap",
+      "description": "User learning roadmap for a chosen career.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "careerId": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "level": { "type": "string", "enum": ["beginner", "some", "comfortable"] },
+        "hours": { "type": "number" },
+        "budget": { "type": "number" },
+        "format": { "type": "string", "maxLength": 40 },
+        "project": { "type": "string", "maxLength": 300 },
+        "weeks": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "careerId", "title", "level", "hours", "budget", "createdAt", "updatedAt"]
+    },
+    "RoadmapTask": {
+      "title": "RoadmapTask",
+      "description": "Individual milestone task within a user roadmap.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "roadmapId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "phase": { "type": "number" },
+        "week": { "type": "number" },
+        "position": { "type": "number" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 200 },
+        "desc": { "type": "string", "maxLength": 600 },
+        "effort": { "type": "string", "maxLength": 80 },
+        "objectives": { "type": "array", "description": "Max 8 learning objectives" },
+        "difficulty": { "type": "string", "enum": ["Beginner", "Intermediate", "Advanced"] },
+        "practicalTask": { "type": "string", "maxLength": 400 },
+        "freeAlternative": { "type": "object" },
+        "note": { "type": "string", "maxLength": 400 },
+        "done": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "roadmapId", "phase", "position", "title", "done", "updatedAt"]
+    },
+    "LearningPlan": {
+      "title": "LearningPlan",
+      "description": "Saved Budget-to-Skill learning plan allocation in INR.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "careerId": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "careerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "level": { "type": "string", "enum": ["beginner", "some", "comfortable"] },
+        "budget": { "type": "number" },
+        "recommendedSpend": { "type": "number" },
+        "hours": { "type": "number" },
+        "device": { "type": "string", "maxLength": 40 },
+        "format": { "type": "string", "maxLength": 40 },
+        "outcome": { "type": "string", "maxLength": 40 },
+        "weeks": { "type": "number" },
+        "itemIds": { "type": "array" },
+        "aiSummary": { "type": "string", "maxLength": 600 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "careerId", "careerName", "budget", "recommendedSpend", "createdAt"]
+    },
+    "ChallengeAttempt": {
+      "title": "ChallengeAttempt",
+      "description": "Completed mini career challenge and user reflection.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "challengeId": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "answer": { "type": "string", "maxLength": 500 },
+        "correct": { "type": "boolean" },
+        "enjoy": { "type": "string", "enum": ["enjoyed", "okay", "not"] },
+        "reflection": { "type": "string", "maxLength": 600 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "challengeId", "correct", "updatedAt"]
+    },
+    "SavedOpportunity": {
+      "title": "SavedOpportunity",
+      "description": "User-bookmarked opportunity with application status.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "opportunityId": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 2, "maxLength": 180 },
+        "category": { "type": "string", "minLength": 2, "maxLength": 60 },
+        "status": { "type": "string", "enum": ["saved", "planning", "applied"] },
+        "savedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "opportunityId", "title", "category", "status", "savedAt", "updatedAt"]
+    },
+    "CareerTransition": {
+      "title": "CareerTransition",
+      "description": "Saved Career Change Simulator transition analysis.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "currentRole": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "targetCareerId": { "type": "string", "minLength": 2, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "targetCareerName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "existingSkills": { "type": "array", "description": "Max 25 matched/transferable skills" },
+        "missingSkills": { "type": "array", "description": "Max 25 missing skills" },
+        "compatibilityScore": { "type": "number" },
+        "estimatedWeeks": { "type": "number" },
+        "budgetInr": { "type": "number" },
+        "weeklyHours": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "currentRole", "targetCareerId", "targetCareerName", "compatibilityScore", "estimatedWeeks", "createdAt"]
+    },
+    "ActivityEvent": {
+      "title": "ActivityEvent",
+      "description": "User exploration activity event.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 250 },
+        "kind": { "type": "string", "enum": ["save", "compare", "task", "challenge", "roadmap", "discover", "transition", "opportunity"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "text", "kind", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/careers/{careerId}": {
+      "schema": { "$ref": "#/entities/Career" },
+      "description": "Publicly readable career catalog; admin-only writes."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private student profile, interests, capabilities, financial expectations, and learning preferences."
+    },
+    "/users/{userId}/saved_careers/{careerId}": {
+      "schema": { "$ref": "#/entities/SavedCareer" },
+      "description": "Saved careers organized into folders (top, alternative, explore_later)."
+    },
+    "/users/{userId}/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/Assessment" },
+      "description": "Saved guided career discovery reports."
+    },
+    "/users/{userId}/comparisons/{comparisonId}": {
+      "schema": { "$ref": "#/entities/CareerComparison" },
+      "description": "Saved multi-career side-by-side comparisons."
+    },
+    "/users/{userId}/roadmaps/{roadmapId}": {
+      "schema": { "$ref": "#/entities/Roadmap" },
+      "description": "Saved personalized learning roadmaps."
+    },
+    "/users/{userId}/roadmaps/{roadmapId}/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/RoadmapTask" },
+      "description": "Tasks and weekly milestones belonging to a roadmap."
+    },
+    "/users/{userId}/learning_plans/{planId}": {
+      "schema": { "$ref": "#/entities/LearningPlan" },
+      "description": "Saved budget-to-skill learning plans and itemized INR allocations."
+    },
+    "/users/{userId}/challenges/{challengeId}": {
+      "schema": { "$ref": "#/entities/ChallengeAttempt" },
+      "description": "Completed Try Before You Choose mini-challenges and reflections."
+    },
+    "/users/{userId}/saved_opportunities/{opportunityId}": {
+      "schema": { "$ref": "#/entities/SavedOpportunity" },
+      "description": "Saved opportunities and application tracking statuses."
+    },
+    "/users/{userId}/career_transitions/{transitionId}": {
+      "schema": { "$ref": "#/entities/CareerTransition" },
+      "description": "Saved Career Change Simulator analyses."
+    },
+    "/users/{userId}/activity/{activityId}": {
+      "schema": { "$ref": "#/entities/ActivityEvent" },
+      "description": "Recent exploration activity log for the user."
+    }
+  }
+}
